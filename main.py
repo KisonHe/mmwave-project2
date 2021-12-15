@@ -18,8 +18,9 @@ import numpy as np
 from door import door
 
 # Set things up
+# logging.basicConfig(level=logging.INFO)
 logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
-main_door = door(-5,1.1,5,1.1)
+main_door = door(-0.5,3.5,-2.5,3.5)
 q = queue.Queue()
 q.maxsize = 1
 
@@ -31,7 +32,7 @@ def take_photo():
     from datetime import datetime
     directory = '/home/kisonhe/Downloads/photos'
     os.chdir(directory)
-    cap = cv2.VideoCapture("/dev/video0")
+    cap = cv2.VideoCapture("/dev/video6")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     while(1):
@@ -44,8 +45,8 @@ def take_photo():
             logging.warning("taking photo!")
             filename = str(datetime.now().strftime("IMG_%Y%m%d_%H%M%S.jpg"))
             cv2.imwrite(filename, frame)
-            cv2.imshow("Suspect", frame)
-            k = cv2.waitKey(1)
+            # cv2.imshow("Suspect", frame)
+            # k = cv2.waitKey(1)
 
 
 DPLOT = False
