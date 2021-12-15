@@ -64,7 +64,7 @@ class door:
             PointC = Point(self.lastPoints[0][i],self.lastPoints[1][i])
             PointD = Point(x[i],y[i])
             if (is_intersected(self.PointA,self.PointB,PointC,PointD)):# 前代码保证是第一轮拍照
-                logging.warning("Person "+str(i)+"triggered")
+                logging.warning("Person "+str(i)+" triggered")
                 self.still_at_door[i] = True
                 self.if_take_photo = True
             pass

@@ -1,10 +1,53 @@
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+
+
+# Threadding and queue
+import threading
+import queue
+
+# Hardware and system
 import serial
 import time
-import numpy as np
 import logging
+
+# Math
+import numpy as np
+
+# User lib
 from door import door
-logging.basicConfig(level=logging.INFO)
-main_door = door(-5,1.5,5,1.5)
+
+# Set things up
+logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
+main_door = door(-5,1.1,5,1.1)
+q = queue.Queue()
+q.maxsize = 1
+
+
+def take_photo():
+    global q
+    import os
+    import cv2
+    from datetime import datetime
+    directory = '/home/kisonhe/Downloads/photos'
+    os.chdir(directory)
+    cap = cv2.VideoCapture("/dev/video0")
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    while(1):
+        ret, frame = cap.read()
+        try:
+            q.get_nowait()
+        except Exception as e: # queue is empty
+            pass
+        else:   # we got queue!
+            logging.warning("taking photo!")
+            filename = str(datetime.now().strftime("IMG_%Y%m%d_%H%M%S.jpg"))
+            cv2.imwrite(filename, frame)
+            cv2.imshow("Suspect", frame)
+            k = cv2.waitKey(1)
+
+
 DPLOT = False
 if (DPLOT):
     import pyqtgraph as pg
@@ -329,14 +372,19 @@ def update():
         # print(targetObj["numTargets"])
         x = -targetObj["posX"]
         y = targetObj["posY"]
-        logging.info("x:"+str(x))
-        logging.info("y:"+str(y))
+        logging.info("x:"+str(x)+"y:"+str(y)+'\r')
         if (DPLOT):
             s2.setData(x,y)
             QtGui.QApplication.processEvents()
         # TODO:Hook here
         # result = someone_at_door()
         result = main_door.take_photo(x,y)
+        if (result):
+            try:
+                q.put_nowait(1)
+            except Exception as e:
+                logging.error("Fail to put queue:"+str(e))
+
         logging.info(str(result))
         pass
     
@@ -345,6 +393,9 @@ def update():
 
 # -------------------------    MAIN   -----------------------------------------  
 
+# start photo taking thread
+t1 = threading.Thread(target=take_photo)
+t1.start()
 # Configurate the serial port
 CLIport, Dataport = serialConfig(configFileName)
 
