@@ -1,8 +1,7 @@
 # 点
 import logging
-from sys import flags
-
-from cv2 import FlannBasedMatcher
+import cv2
+import numpy as np
 class Point(object):
 
     def __init__(self, x, y):
@@ -44,9 +43,22 @@ class door:
     lastPoints = []
     LastNumPeople = 0
     # (x1,y1).------.(x2,y2)
-    def __init__(self, x1:float,y1:float,x2:float,y2:float):
+    #(0,0)--(1,0)
+    #(1,0)--(1,1)
+    def __init__(self, x1:float,y1:float,x2:float,y2:float,ifPlot:bool):
         self.PointA = Point(x1,y1)
         self.PointB = Point(x2,y2)
+        self.ifPlot = False
+        if (ifPlot):
+            self.ifPlot = True
+            self.font = cv2.FONT_HERSHEY_SIMPLEX 
+            self.window_x = 480
+            self.window_y = int(self.window_x/6*10)
+            self.pxPerMeter = int(self.window_x/6)
+            self.image = np.zeros((self.window_x, self.window_y, 3), np.uint8)
+            self.image.fill(255)
+            cv2.circle(self.image,(int(self.window_y/2),0),5,(0,0,255),6)
+            cv2.line(self.image, (int(self.window_y/2*(1+x1/5)),int(y1*self.pxPerMeter)), (int(self.window_y*(x2+5)/10),int(y2*self.pxPerMeter)), (0,255,0), 3)
 
     def take_photo(self,x:list,y:list):
         self.if_take_photo = False
@@ -73,6 +85,16 @@ class door:
             self.lastPoints[1][i] = y[i]
             pass
         return self.if_take_photo
+    def drawPeople(self,x:list,y:list):
+        if (not self.ifPlot):
+            raise SystemError
+        if ((len(x)!=len(y)) or (len(x)==0)):
+            logging.error("Called drawPeople with wrong data")
+            return self.image
+        for peopleNum in range(len(x)):
+            cv2.circle(self.image,(int(x[peopleNum]*self.pxPerMeter),int(y[peopleNum]*self.pxPerMeter)),5,(0,0,255),6)
+            cv2.putText(self.image, str(f"Suspect:{peopleNum}"), (int(x[peopleNum]*self.pxPerMeter)+5,int(y[peopleNum]*self.pxPerMeter)+15), self.font, 0.5, (159, 159, 255), 2)
+        return self.image
 
 
 

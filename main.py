@@ -18,6 +18,13 @@ import numpy as np
 from door import door
 
 # Set things up
+
+DPLOT = True
+if (DPLOT):
+    import cv2
+    # import pyqtgraph as pg
+    # from pyqtgraph.Qt import QtGui
+
 # logging.basicConfig(level=logging.INFO)
 logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
 main_door = door(-0.5,3.5,-2.5,3.5)
@@ -47,12 +54,6 @@ def take_photo():
             cv2.imwrite(filename, frame)
             # cv2.imshow("Suspect", frame)
             # k = cv2.waitKey(1)
-
-
-DPLOT = False
-if (DPLOT):
-    import pyqtgraph as pg
-    from pyqtgraph.Qt import QtGui
 
 # Change the configuration file name
 configFileName = '/home/kisonhe/githubPrjects/mmwave-project2/mmw_pplcount_demo_default.cfg'
@@ -375,8 +376,8 @@ def update():
         y = targetObj["posY"]
         logging.info("x:"+str(x)+"y:"+str(y)+'\r')
         if (DPLOT):
-            s2.setData(x,y)
-            QtGui.QApplication.processEvents()
+            cv2.imshow("Kison's mmwave Radar",main_door.drawPeople(x,y))
+            cv2.waitKey(1)
         # TODO:Hook here
         # result = someone_at_door()
         result = main_door.take_photo(x,y)
@@ -404,21 +405,7 @@ CLIport, Dataport = serialConfig(configFileName)
 configParameters = parseConfigFile(configFileName)
 
 if (DPLOT):
-    # START QtAPPfor the plot
-    app = QtGui.QApplication([])
-    # Set the plot 
-    pg.setConfigOption('background','w')
-    win = pg.GraphicsWindow(title="2D scatter plot")
-    p = win.addPlot()
-    p.setXRange(-0.5,0.5)
-    p.setYRange(0,6)
-    p.setLabel('left',text = 'Y position (m)')
-    p.setLabel('bottom', text= 'X position (m)')
-    s2 = p.plot([],[],pen=(0,0,255),symbol='star')
-    # test
-    # vb = win.addViewBox(col=0, row=1)
-    # r1 = pg.QtGui.QGraphicsRectItem(0, 0, 0.4, 1)
-    # p.addItem(r1)
+    cv2.namedWindow("Kison's mmwave Radar")
 
 # Main loop 
 targetObj = {}  
