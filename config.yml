@@ -1,0 +1,8 @@
+Files:
+    logPath: /home/kisonhe/Downloads/photos/test.log
+    photoPath: /home/kisonhe/Downloads/photos
+    mmawveConfig: /home/kisonhe/githubPrjects/mmwave-project2/mmw_pplcount_demo_default.cfg
+
+Camera:
+    num: /dev/video6
+

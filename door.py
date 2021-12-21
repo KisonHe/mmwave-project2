@@ -38,30 +38,35 @@ def is_intersected(A, B, C, D):
 
 
 class door:
-    if_take_photo = False
+    if_take_photo = 0
     still_at_door=[]# 防止老是拍照
     lastPoints = []
     LastNumPeople = 0
     # (x1,y1).------.(x2,y2)
     #(0,0)--(1,0)
     #(1,0)--(1,1)
+    def initCanvas(self):
+        if (not self.ifPlot):
+            raise SystemError
+        self.font = cv2.FONT_HERSHEY_SIMPLEX 
+        self.window_x = 480
+        self.window_y = int(self.window_x/6*10)
+        self.pxPerMeter = int(self.window_x/6)
+        self.image = np.zeros((self.window_x, self.window_y, 3), np.uint8)
+        self.image.fill(255)
+        cv2.circle(self.image,(int(self.window_y/2),0),5,(0,0,255),6)
+        cv2.line(self.image, (int(self.window_y/2*(1+self.PointA.x/5)),int(self.PointA.y*self.pxPerMeter)), (int(self.window_y*(self.PointB.x+5)/10),int(self.PointB.y*self.pxPerMeter)), (0,255,0), 3)
+
     def __init__(self, x1:float,y1:float,x2:float,y2:float,ifPlot:bool):
         self.PointA = Point(x1,y1)
         self.PointB = Point(x2,y2)
         self.ifPlot = False
         if (ifPlot):
             self.ifPlot = True
-            self.font = cv2.FONT_HERSHEY_SIMPLEX 
-            self.window_x = 480
-            self.window_y = int(self.window_x/6*10)
-            self.pxPerMeter = int(self.window_x/6)
-            self.image = np.zeros((self.window_x, self.window_y, 3), np.uint8)
-            self.image.fill(255)
-            cv2.circle(self.image,(int(self.window_y/2),0),5,(0,0,255),6)
-            cv2.line(self.image, (int(self.window_y/2*(1+x1/5)),int(y1*self.pxPerMeter)), (int(self.window_y*(x2+5)/10),int(y2*self.pxPerMeter)), (0,255,0), 3)
+            self.initCanvas()
 
-    def take_photo(self,x:list,y:list):
-        self.if_take_photo = False
+    def take_photo(self,x:list,y:list)->int:
+        self.if_take_photo = 0
         if len(x) != self.LastNumPeople:
             self.LastNumPeople = len(x)
             self.still_at_door = [False] * len(x) # 填充
@@ -76,9 +81,16 @@ class door:
             PointC = Point(self.lastPoints[0][i],self.lastPoints[1][i])
             PointD = Point(x[i],y[i])
             if (is_intersected(self.PointA,self.PointB,PointC,PointD)):# 前代码保证是第一轮拍照
-                logging.warning("Person "+str(i)+" triggered")
-                self.still_at_door[i] = True
-                self.if_take_photo = True
+                if (PointD.y < (self.PointA.y + self.PointB.y)/2):
+                    # 进门ing
+                    logging.warning("Person "+str(i)+" triggered Enter Door")
+                    self.still_at_door[i] = True
+                    self.if_take_photo = 1
+                else:
+                    # 出门ing
+                    logging.warning("Person "+str(i)+" triggered Exiting Door")
+                    self.still_at_door[i] = True
+                    self.if_take_photo = -1
             pass
         for i in range(self.LastNumPeople):
             self.lastPoints[0][i] = x[i]
@@ -91,9 +103,10 @@ class door:
         if ((len(x)!=len(y)) or (len(x)==0)):
             logging.error("Called drawPeople with wrong data")
             return self.image
+        self.initCanvas()
         for peopleNum in range(len(x)):
-            cv2.circle(self.image,(int(x[peopleNum]*self.pxPerMeter),int(y[peopleNum]*self.pxPerMeter)),5,(0,0,255),6)
-            cv2.putText(self.image, str(f"Suspect:{peopleNum}"), (int(x[peopleNum]*self.pxPerMeter)+5,int(y[peopleNum]*self.pxPerMeter)+15), self.font, 0.5, (159, 159, 255), 2)
+            cv2.circle(self.image,(int(self.window_y/2 + x[peopleNum]*self.pxPerMeter),int(y[peopleNum]*self.pxPerMeter)),5,(0,0,255),6)
+            cv2.putText(self.image, str(f"Suspect:{peopleNum}"), (int(self.window_y/2 + x[peopleNum]*self.pxPerMeter)+5,int(y[peopleNum]*self.pxPerMeter)+15), self.font, 0.5, (159, 159, 255), 2)
         return self.image
 
 

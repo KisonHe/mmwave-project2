@@ -1,23 +1,28 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 
-
-# Threadding and queue
-import threading
-import queue
-
 # Hardware and system
 import serial
 import time
 import logging
 
+# Threadding and queue
+import threading
+import queue
+
 # Math
 import numpy as np
+
+# # Read config
+# import yaml
 
 # User lib
 from door import door
 
 # Set things up
+
+# yamlfile = open("config.yml", "r")
+# data = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 DPLOT = True
 if (DPLOT):
@@ -25,14 +30,15 @@ if (DPLOT):
     # import pyqtgraph as pg
     # from pyqtgraph.Qt import QtGui
 
-# logging.basicConfig(level=logging.INFO)
-logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
-main_door = door(-0.5,3.5,-2.5,3.5)
+logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
+# main_door = door(-2.5,3.5,2.5,3.5,DPLOT)
+main_door = door(2.2,4.0,0.3,4.0,DPLOT)
 q = queue.Queue()
 q.maxsize = 1
 
 
-def take_photo():
+def takePhotoThread():
     global q
     import os
     import cv2
@@ -45,12 +51,16 @@ def take_photo():
     while(1):
         ret, frame = cap.read()
         try:
-            q.get_nowait()
+            status = q.get_nowait()
         except Exception as e: # queue is empty
             pass
         else:   # we got queue!
-            logging.warning("taking photo!")
-            filename = str(datetime.now().strftime("IMG_%Y%m%d_%H%M%S.jpg"))
+            if (status > 0):
+                tmpstr = "进门"
+            else:
+                tmpstr = "出门"
+            logging.warning("Taking photo of " + tmpstr + "!")
+            filename = str(datetime.now().strftime("IMG_%Y%m%d_%H%M%S")) + tmpstr + ".jpg"
             cv2.imwrite(filename, frame)
             # cv2.imshow("Suspect", frame)
             # k = cv2.waitKey(1)
@@ -381,9 +391,9 @@ def update():
         # TODO:Hook here
         # result = someone_at_door()
         result = main_door.take_photo(x,y)
-        if (result):
+        if (result != 0):
             try:
-                q.put_nowait(1)
+                q.put_nowait(result)
             except Exception as e:
                 logging.error("Fail to put queue:"+str(e))
 
@@ -396,7 +406,7 @@ def update():
 # -------------------------    MAIN   -----------------------------------------  
 
 # start photo taking thread
-t1 = threading.Thread(target=take_photo)
+t1 = threading.Thread(target=takePhotoThread)
 t1.start()
 # Configurate the serial port
 CLIport, Dataport = serialConfig(configFileName)
@@ -406,6 +416,7 @@ configParameters = parseConfigFile(configFileName)
 
 if (DPLOT):
     cv2.namedWindow("Kison's mmwave Radar")
+    cv2.imshow("Kison's mmwave Radar",main_door.image)
 
 # Main loop 
 targetObj = {}  
