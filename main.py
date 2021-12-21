@@ -390,7 +390,7 @@ def update():
             cv2.waitKey(1)
         # TODO:Hook here
         # result = someone_at_door()
-        result = main_door.take_photo(x,y)
+        result = main_door.takePhoto(x,y)
         if (result != 0):
             try:
                 q.put_nowait(result)

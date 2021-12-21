@@ -23,7 +23,7 @@ def negative(vector):
 def vector_product(vectorA, vectorB):
     return vectorA.x * vectorB.y - vectorB.x * vectorA.y
 
-def is_intersected(A, B, C, D):
+def isIntersected(A, B, C, D):
     AC = Vector(A, C)
     AD = Vector(A, D)
     BC = Vector(B, C)
@@ -38,8 +38,8 @@ def is_intersected(A, B, C, D):
 
 
 class door:
-    if_take_photo = 0
-    still_at_door=[]# 防止老是拍照
+    ifTakePhoto = 0
+    stillAtDoor=[]# 防止老是拍照
     lastPoints = []
     LastNumPeople = 0
     # (x1,y1).------.(x2,y2)
@@ -65,38 +65,38 @@ class door:
             self.ifPlot = True
             self.initCanvas()
 
-    def take_photo(self,x:list,y:list)->int:
-        self.if_take_photo = 0
+    def takePhoto(self,x:list,y:list)->int:
+        self.ifTakePhoto = 0
         if len(x) != self.LastNumPeople:
             self.LastNumPeople = len(x)
-            self.still_at_door = [False] * len(x) # 填充
+            self.stillAtDoor = [False] * len(x) # 填充
             self.lastPoints = [x,y]
             return False # drop frame if num people changed
         # 对每个人计算(没有去判断每个人的位置，可能会发生突变，就假装没有这个问题好了)
         for i in range(self.LastNumPeople):
-            if (self.still_at_door[i]):#上次计算认为这个人还在门边
-                # TODO:计算当前点到门的距离，超过阈值就释放still_at_door
+            if (self.stillAtDoor[i]):#上次计算认为这个人还在门边
+                # TODO:计算当前点到门的距离，超过阈值就释放stillAtDoor
                 # 如果没超过，continue
                 pass
             PointC = Point(self.lastPoints[0][i],self.lastPoints[1][i])
             PointD = Point(x[i],y[i])
-            if (is_intersected(self.PointA,self.PointB,PointC,PointD)):# 前代码保证是第一轮拍照
+            if (isIntersected(self.PointA,self.PointB,PointC,PointD)):# 前代码保证是第一轮拍照
                 if (PointD.y < (self.PointA.y + self.PointB.y)/2):
                     # 进门ing
                     logging.warning("Person "+str(i)+" triggered Enter Door")
-                    self.still_at_door[i] = True
-                    self.if_take_photo = 1
+                    self.stillAtDoor[i] = True
+                    self.ifTakePhoto = 1
                 else:
                     # 出门ing
                     logging.warning("Person "+str(i)+" triggered Exiting Door")
-                    self.still_at_door[i] = True
-                    self.if_take_photo = -1
+                    self.stillAtDoor[i] = True
+                    self.ifTakePhoto = -1
             pass
         for i in range(self.LastNumPeople):
             self.lastPoints[0][i] = x[i]
             self.lastPoints[1][i] = y[i]
             pass
-        return self.if_take_photo
+        return self.ifTakePhoto
     def drawPeople(self,x:list,y:list):
         if (not self.ifPlot):
             raise SystemError
