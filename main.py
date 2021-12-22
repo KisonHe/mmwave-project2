@@ -30,10 +30,10 @@ if (DPLOT):
     # import pyqtgraph as pg
     # from pyqtgraph.Qt import QtGui
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 # logging.basicConfig(level=logging.WARNING,filename='/home/kisonhe/Downloads/photos/test.log', filemode='w')
 # main_door = door(-2.5,3.5,2.5,3.5,DPLOT)
-main_door = door(2.2,4.0,0.3,4.0,DPLOT)
+main_door = door(-1.5,4.0,1.3,4.0,DPLOT)
 q = queue.Queue()
 q.maxsize = 1
 
